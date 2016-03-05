@@ -13,11 +13,27 @@ class MoviesController < ApplicationController
   def index
     @all_ratings = Movie.ratings
     movies = Movie.all
+    
+    if (params[:column] == nil and session[:column] != nil) and (params[:ratings] == nil and session[:ratings] != nil)
+      redirect_to sort_movies_path(:column => session[:column], ratings: session[:ratings], commit: 'Refresh')
+    elsif params[:ratings] == nil and session[:ratings] != nil and params[:column] != nil
+      redirect_to sort_movies_path(:column => params[:column], ratings: session[:ratings], commit: 'Refresh')
+    elsif params[:column] == nil and session[:column] != nil and params[:ratings] != nil
+      redirect_to sort_movies_path(:column => session[:column], ratings: params[:ratings], commit: 'Refresh')
+    end
+    
     if params[:ratings] != nil
-      movies = Movie.all.where(rating: params[:ratings].keys)
-    end 
+      params[:ratings].each do |rating|
+      end
+      session[:ratings] = params[:ratings]
+      movies = Movie.all.where(rating: session[:ratings].keys)
+    else
+      session.delete(:ratings)
+    end
+    
     if params[:column] != nil
-      movies = movies.order(params[:column])
+      session[:column] = params[:column]
+      movies = movies.order(session[:column])
     end
     @movies = movies
   end
